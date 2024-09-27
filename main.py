@@ -1,9 +1,6 @@
 import customtkinter as ctk
-import hashlib
-import re
 from settings import *
 import customtkinter as ctk
-import sqlite3
 from PIL import Image
 from tkinter import font
 import scrapetube
@@ -80,8 +77,6 @@ class StartScreen(ctk.CTkFrame):
                                     font=(FONT_REGULAR, 16), height=46, width=132)
         self.go_btn.place(relx=0.85, rely=0.84, anchor=ctk.CENTER)
 
-    
-
 
     def check_(self):
         self.show_api_error()
@@ -96,7 +91,6 @@ class StartScreen(ctk.CTkFrame):
         if check_api(api_key) != True:
             self.show_api_error()
             return
-
 
         self.successfuly = True
         self.username = username
@@ -115,8 +109,6 @@ class StartScreen(ctk.CTkFrame):
         self.error_api_msg.configure(text="Invalid OpenAi API key")
         self.openai_entry.configure(border_width=1, border_color=PAS_RED)
 
-    
-    
     
 
 
