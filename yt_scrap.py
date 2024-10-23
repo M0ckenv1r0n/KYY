@@ -1,22 +1,4 @@
 import scrapetube
-from youtube_transcript_api import YouTubeTranscriptApi 
-import time
-import tiktoken
-
-
-
-# def username_type(username: str) -> str:
-#                for param in ['channel_url', 'channel_username', 'channel_id']:
-#                     try:
-#                          videos = list(scrapetube.get_channel(
-#                               content_type='videos', **{param: username}, limit=1))
-#                          if videos:
-#                               return param
-#                     except Exception as e:
-#                          logging.error(f"Error retrieving videos with {param}: {e}")
-#                return False
-
-import scrapetube
 import tiktoken
 from youtube_transcript_api import YouTubeTranscriptApi
 import time
@@ -58,7 +40,6 @@ def get_transcript(username: str) -> tuple[str, int, int]:
     transcripts = '\n\n'.join(transcripts)
     available_video = counter
     
-
     return (transcripts, available_video, cum_video_count)
 
 
