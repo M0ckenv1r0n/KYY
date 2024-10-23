@@ -35,9 +35,8 @@ def valid_username(username: str) -> bool:
             logging.error(f"Error retrieving videos with {param}: {e}")
     return False
 
+
 # Validate the OpenAI API key by checking the available models.
-
-
 def check_api(openai_key: str) -> bool:
     try:
         client = OpenAI(api_key=openai_key)
@@ -119,9 +118,10 @@ class StartScreen(ctk.CTkFrame):
         self.on_login_success(username, api_key)
         self.login_success()
 
-    def login_success(self)-> None:
+    def login_success(self) -> None:
         # Notify the user of success and hide the start screen
-        success_notification = SuccessNotif(self.parent, "positive", "Successfully")
+        success_notification = SuccessNotif(
+            self.parent, "positive", "Successfully")
         self.after(10000, lambda: success_notification.place_forget())
         self.place_forget()  # Hide the current frame
         logging.info("Login successful!")
@@ -135,9 +135,11 @@ class StartScreen(ctk.CTkFrame):
         self.error_api_msg.configure(text=message)
         self.openai_entry.configure(border_width=1, border_color=PAS_RED)
 
+# Reusable notification frame
+
 
 class SuccessNotif(ctk.CTkFrame):
-    def __init__(self, parent, sentiment: Literal["positive", "negative"], text: str):
+    def __init__(self, parent, sentiment: Literal["positive", "negative"], text: str) -> None:
         super().__init__(master=parent, fg_color=DARK_GREY,
                          corner_radius=0, border_color=PAS_GREEN, border_width=1)
         self.place_configure(relx=0.99, rely=0.01,
@@ -146,9 +148,11 @@ class SuccessNotif(ctk.CTkFrame):
             self, text=text, text_color=PAS_GREEN, font=(FONT_REGULAR, 16))
         self.label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
+# Secondary frame for SettingsScreen
+
 
 class TerminalLikeBox(ctk.CTkFrame):
-    def __init__(self, parent, available_video_count: int, cum_video_count: int):
+    def __init__(self, parent, available_video_count: int, cum_video_count: int) -> None:
         super().__init__(master=parent, fg_color=DARK_DARK_GREY, corner_radius=0)
         self.place_configure(relx=0.5, rely=0.48,
                              anchor=ctk.CENTER, width=600, height=150)
@@ -172,22 +176,22 @@ class TerminalLikeBox(ctk.CTkFrame):
                                    font=(FONT_REGULAR, 18)).place(relx=0.02, rely=0.65, anchor=ctk.W)
 
 
-
 class SettingsScreen(ctk.CTkFrame):
-    def __init__(self, parent, username: str, available_video_count: int, cum_video_count: int, proceed_to_chat):
+    def __init__(self, parent, username: str, available_video_count: int, cum_video_count: int, proceed_to_chat) -> None:
         super().__init__(master=parent, fg_color=DARK_GREY, corner_radius=0)
-        self.proceed_to_chat =proceed_to_chat
+        self.proceed_to_chat = proceed_to_chat
         self.parent = parent
         self.username = username
 
         self.place_configure(relx=0.5, rely=0.5,
                              anchor=ctk.CENTER, width=730, height=320)
 
-        self.h1 = ctk.CTkLabel(self, text = f"You Chose {username}!", font=(
-            FONT_REGULAR, 38), text_color=WHITE, 
+        self.h1 = ctk.CTkLabel(self, text=f"You Chose {username}!", font=(
+            FONT_REGULAR, 38), text_color=WHITE,
             corner_radius=50).place(relx=0.07, rely=0.13, anchor=ctk.W)
 
-        terminal_box = TerminalLikeBox(self, available_video_count, cum_video_count)
+        terminal_box = TerminalLikeBox(
+            self, available_video_count, cum_video_count)
 
         # self.label4 = ctk.CTkLabel(self, text="Choose the amount of videos you want to include:",
         #                            text_color=WHITE,
@@ -200,9 +204,8 @@ class SettingsScreen(ctk.CTkFrame):
 
         # self.slider = ctk.CTkSlider(self, from_=0, to=10, button_color=PAS_GREEN, number_of_steps =10,
         #                             button_hover_color=PAS_GREEN_LIGHT).place(relx=0.65, rely=0.6, anchor=ctk.CENTER)
-        
-        # Button to trigger the transition to another screen
 
+        # Button to trigger the transition to another screen
 
         self.go_btn = ctk.CTkButton(self, text='Let\'s GO!', border_color=CLOSE_RED, border_width=2,
                                     fg_color=CLOSE_RED, hover_color=DARK_GREY, command=self.go_next_screen,
@@ -211,6 +214,7 @@ class SettingsScreen(ctk.CTkFrame):
 
     def go_next_screen(self) -> None:
         logging.info(f"{self.username} pressed 'Go' on SettingsScreen.")
+        
         self.proceed_to_chat(self.username) # Notify the parent app to transition
 
     # def check_num(self):
@@ -235,38 +239,37 @@ class App(ctk.CTk):
         self.minsize(800, 500)
         self.config(background='#0e0f0f')
 
-        # layout
+        # Core layout configuration 
         self.rowconfigure(1, weight=1)
         self.columnconfigure(1, weight=1)
 
         # Initial screen layout
         self.start_screen = StartScreen(self, self.on_login_success)
 
-        
-
     def on_login_success(self, username: str, api_key: str) -> None:
-        # Store the API key in the App class instance variable
         self.api_key = api_key
 
+        # Call YouTube scrap in order to get transcript, available_video_count and cum_video_count using the username 
+        scrap_response = get_transcript(username)
 
-        # Scrape YouTube transcript using the username
-        self.transcript = get_transcript(username)[0]
-
-        available_video_count = get_transcript(username)[1]
-        cum_video_count = get_transcript(username)[2]
+        self.transcript = scrap_response[0]
+        available_video_count = scrap_response[1]
+        cum_video_count = scrap_response[2]
 
         logging.info(f"Transripts for {username} successfully scraped")
-        
+
         # Hide the StartScreen and show the SettingsScreen or the main content
-        self.settings_screen = SettingsScreen(self, username, available_video_count, cum_video_count, self.proceed_to_chat)
+        self.settings_screen = SettingsScreen(
+            self, username, available_video_count, cum_video_count, self.proceed_to_chat)
         self.start_screen.place_forget()
 
-
     def proceed_to_chat(self, username: str) -> None:
-        logging.info(f"Transitioning to MainChatFrame with username: {username}")
+        logging.info(
+            f"Transitioning to MainChatFrame with username: {username}")
 
         # Generate the system prompt
-        system_prompt = get_system_prompt(self.transcript, username) # get_system_prompt from settings
+        # get_system_prompt from settings
+        system_prompt = get_system_prompt(self.transcript, username)
 
         # Initialize ChatGPTHandler
         chat_handler = ChatGPTHandler(
@@ -278,22 +281,22 @@ class App(ctk.CTk):
         self.llm_chat_screen = MainChatFrame(self, chat_handler)
         self.settings_screen.place_forget()
 
-    def run(self):
+    def run(self) -> None:
         logging.info("App mainloop running.")
         self.mainloop()
         logging.info("Application is now closed.")
 
 
 class ChatGPTHandler:
-    def __init__(self, api_key: str, system_prompt: str):
+    def __init__(self, api_key: str, system_prompt: str) -> None:
         self.client = OpenAI(api_key=api_key)
         self.conversation_context = [
             {"role": "system", "content": system_prompt}]
 
-    def add_to_context(self, role, content):
+    def add_to_context(self, role: str, content: str) -> None:
         self.conversation_context.append({"role": role, "content": content})
 
-    def send_request(self, user_message: str, model="gpt-4o-mini", temperature=1) -> str:
+    def send_request(self, user_message: str, model: str = "gpt-4o-mini", temperature: float = 1.0) -> str:
 
         # Add the user message to the conversation context
         self.add_to_context("user", user_message)
@@ -315,4 +318,3 @@ class ChatGPTHandler:
 if __name__ == "__main__":
     app = App()
     app.run()
-    
