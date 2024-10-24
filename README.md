@@ -10,7 +10,7 @@ KYY or Know Your YouTuber is an AI-powered chat application that allows users to
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-repo/KYY.git
+   git clone https://github.com/M0ckenv1r0n/KYY
    cd KYY
    ```
 
