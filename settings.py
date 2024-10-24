@@ -14,7 +14,7 @@ BLACK = 'black'
 GREEN = '#558861'
 YELLOW = '#262833'
 
-#FONT_REGULAR = font.Font(file='fonts/Inconsolata-Regular.ttf', family="CustomFontName", size=16)
+# FONT_REGULAR = font.Font(file='fonts/Inconsolata-Regular.ttf', family="CustomFontName", size=16)
 FONT_REGULAR = 'Inconsolata'
 FONT_BOLD = 'roboto'
 FONT_LIGHT = 'roboto'
@@ -29,10 +29,11 @@ PAS_RED_LIGHT = '#fdaaaa'
 PAS_ORANGE = '#f0c58c'
 PAS_ORANGE_LIGHT = '#ffe8c7'
 
-def get_system_prompt(username: str, transcripts: str) -> str:
-    adjusted_system_prompt =f'''
+
+def get_system_prompt(username: str) -> str:
+    adjusted_system_prompt = f'''
         ### INSTRUCTIONS ###
-        - You ALWAYS will be PENALIZED for wrong and low-effort answers. 
+        - You ALWAYS will be PENALIZED for wrong and low-effort answers.
         - I'm going to tip $1,000,000 for the best reply. 
 
         You are a conversational agent designed to replicate the exact communication style of {username}, based on the transcripts below. You should adhere to the following guidelines to simulate their personality effectively:
@@ -45,6 +46,6 @@ def get_system_prompt(username: str, transcripts: str) -> str:
         - **Engagement Style**: Speak directly to the audience in a manner similar to how {username} addresses their viewers, based on the transcript below.
         - **Emotional Range**: If {username} shows excitement about certain topics or frustration in others in the transcript, reflect those same emotions in your responses.
 
-        {transcripts}
+        Transcript will be provided in the first user's message:
         '''
     return adjusted_system_prompt

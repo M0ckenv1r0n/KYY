@@ -22,18 +22,28 @@ logging.basicConfig(
 )
 
 # Check if the provided username corresponds to a valid YouTube channel.
-
-
 def valid_username(username: str) -> bool:
-    for param in ['channel_url', 'channel_username', 'channel_id']:
-        try:
-            videos = list(scrapetube.get_channel(
-                content_type='videos', **{param: username}, limit=1))
-            if videos:
-                return True
-        except Exception as e:
-            logging.error(f"Error retrieving videos with {param}: {e}")
-    return False
+    try:
+        videos = list(scrapetube.get_channel(
+        content_type='videos', channel_username=username,limit=1))
+        if videos:
+            logging.info("YouYube credentials are valid!")
+            return True
+    except Exception as e:
+        logging.error(f"Error retrieving videos: {e}")
+        return False
+
+    '''Solution that accepts also channel_url and channel_id, but ineffective coz username is used later'''
+    # for param in ['channel_url', 'channel_username', 'channel_id']:
+    #     try:
+    #         videos = list(scrapetube.get_channel(
+    #             content_type='videos', **{param: username}, limit=1))
+    #         if videos:
+    #             logging.info("YouYube credentials are valid!")
+    #             return True
+    #     except Exception as e:
+    #         logging.error(f"Error retrieving videos with {param}: {e}")
+    # return False
 
 
 # Validate the OpenAI API key by checking the available models.
@@ -113,18 +123,17 @@ class StartScreen(ctk.CTkFrame):
         if not check_api(api_key):
             self.show_api_error("Invalid API key.")
             return
-
-        # If everything is valid, proceed
+        
+        
         self.on_login_success(username, api_key)
-        self.login_success()
+        # If credentials are valid, proceed
+        try:
+            pass
 
-    def login_success(self) -> None:
-        # Notify the user of success and hide the start screen
-        success_notification = SuccessNotif(
-            self.parent, "positive", "Successfully")
-        self.after(10000, lambda: success_notification.place_forget())
-        self.place_forget()  # Hide the current frame
-        logging.info("Login successful!")
+        except Exception as e:
+            logging.error(e)
+            unsuccess_notification = Notif(self.parent, "negative", "An Unexpected Error Occurred")
+
 
     def show_username_error(self, message="Invalid username") -> None:
         # Display error message
@@ -135,18 +144,21 @@ class StartScreen(ctk.CTkFrame):
         self.error_api_msg.configure(text=message)
         self.openai_entry.configure(border_width=1, border_color=PAS_RED)
 
+
 # Reusable notification frame
-
-
-class SuccessNotif(ctk.CTkFrame):
+class Notif(ctk.CTkFrame):
     def __init__(self, parent, sentiment: Literal["positive", "negative"], text: str) -> None:
-        super().__init__(master=parent, fg_color=DARK_GREY,
-                         corner_radius=0, border_color=PAS_GREEN, border_width=1)
+        background_colour = PAS_GREEN if sentiment == "positive" else PAS_RED
+
+        super().__init__(master=parent, fg_color=background_colour,
+                         corner_radius=15, border_width=0)
         self.place_configure(relx=0.99, rely=0.01,
                              anchor=ctk.NE, width=200, height=75)
         self.label = ctk.CTkLabel(
-            self, text=text, text_color=PAS_GREEN, font=(FONT_REGULAR, 16))
+            self, text=text, text_color=DARK_GREY, font=(FONT_REGULAR, 16))
         self.label.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+
+        self.after(10000, lambda: self.place_forget()) #Hide notification after 10s
 
 # Secondary frame for SettingsScreen
 
@@ -163,11 +175,11 @@ class TerminalLikeBox(ctk.CTkFrame):
                                   text_color=LIGHT_GREY,
                                   font=(FONT_REGULAR, 12), fg_color=GREY).place(relx=0.02, rely=0.075, anchor=ctk.W)
 
-        self.label1 = ctk.CTkLabel(self, text=f"root@kyy: {available_video_count} videos successfuly scraped",
+        self.label1 = ctk.CTkLabel(self, text=f"root@kyy: {cum_video_count} videos successfuly scraped",
                                    text_color=LIGHT_GREY,
                                    font=(FONT_REGULAR, 18)).place(relx=0.02, rely=0.3, anchor=ctk.W)
 
-        self.label2 = ctk.CTkLabel(self, text=f"root@kyy: {cum_video_count} videos available for inclusion\n",
+        self.label2 = ctk.CTkLabel(self, text=f"root@kyy: {available_video_count} videos available for inclusion\n",
                                    text_color=LIGHT_GREY,
                                    font=(FONT_REGULAR, 18)).place(relx=0.02, rely=0.55, anchor=ctk.W)
 
@@ -214,8 +226,9 @@ class SettingsScreen(ctk.CTkFrame):
 
     def go_next_screen(self) -> None:
         logging.info(f"{self.username} pressed 'Go' on SettingsScreen.")
-        
-        self.proceed_to_chat(self.username) # Notify the parent app to transition
+
+        # Notify the parent app to transition
+        self.proceed_to_chat(self.username)
 
     # def check_num(self):
     #     num = self.videos_num_entry
@@ -234,12 +247,12 @@ class App(ctk.CTk):
         # setup
         super().__init__()
         ctk.set_appearance_mode('Dark')
-        self.geometry('1100x600')
+        self.geometry('800x500')#1100x600
         self.title('KYY')
         self.minsize(800, 500)
         self.config(background='#0e0f0f')
 
-        # Core layout configuration 
+        # Core layout configuration
         self.rowconfigure(1, weight=1)
         self.columnconfigure(1, weight=1)
 
@@ -249,7 +262,8 @@ class App(ctk.CTk):
     def on_login_success(self, username: str, api_key: str) -> None:
         self.api_key = api_key
 
-        # Call YouTube scrap in order to get transcript, available_video_count and cum_video_count using the username 
+        # Call YouTube scrap in order to get transcript, available_video_count and cum_video_count using the username
+        logging.info("Scrap attempt for {username}")
         scrap_response = get_transcript(username)
 
         self.transcript = scrap_response[0]
@@ -258,7 +272,9 @@ class App(ctk.CTk):
 
         logging.info(f"Transripts for {username} successfully scraped")
 
-        # Hide the StartScreen and show the SettingsScreen or the main content
+        success_notification = Notif(self, "positive", "Successfully")
+
+        # Show the SettingsScreen and hide the StartScreen
         self.settings_screen = SettingsScreen(
             self, username, available_video_count, cum_video_count, self.proceed_to_chat)
         self.start_screen.place_forget()
@@ -268,14 +284,16 @@ class App(ctk.CTk):
             f"Transitioning to MainChatFrame with username: {username}")
 
         # Generate the system prompt
-        # get_system_prompt from settings
-        system_prompt = get_system_prompt(self.transcript, username)
+        # get_system_prompt from settings.py
+        system_prompt = get_system_prompt(username)
 
         # Initialize ChatGPTHandler
         chat_handler = ChatGPTHandler(
             system_prompt=system_prompt,
             api_key=self.api_key
         )
+
+        chat_handler.add_to_context("user", self.transcript)
 
         # Transition to the main chat screen
         self.llm_chat_screen = MainChatFrame(self, chat_handler)
@@ -297,7 +315,6 @@ class ChatGPTHandler:
         self.conversation_context.append({"role": role, "content": content})
 
     def send_request(self, user_message: str, model: str = "gpt-4o-mini", temperature: float = 1.0) -> str:
-
         # Add the user message to the conversation context
         self.add_to_context("user", user_message)
 
