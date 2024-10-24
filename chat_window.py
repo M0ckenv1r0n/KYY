@@ -136,7 +136,7 @@ class AiAnswerFrame(ctk.CTkFrame):
 
 class AiAnswerSubFrame(ctk.CTkFrame):
     def __init__(self, parent, response):
-        super().__init__(master=parent, fg_color='GREEN', corner_radius=15)
+        super().__init__(master=parent, fg_color=DARK_GREY, corner_radius=15)
         self.pack(padx=(25, 1), pady=(0, 10))
 
         self.textbox = ctk.CTkTextbox(self, activate_scrollbars=False, font=(FONT_REGULAR, 11), fg_color=DARK_GREY,
@@ -192,7 +192,7 @@ class UserInputFrame(ctk.CTkFrame):
 
 class UserInputSubFrame(ctk.CTkFrame):
     def __init__(self, parent, user_input):
-        super().__init__(master=parent, fg_color='GREEN', corner_radius=15)
+        super().__init__(master=parent, fg_color=DARK_GREY, corner_radius=15)
         self.pack(padx=(1, 25), pady=(0, 10))
 
         self.textbox = ctk.CTkTextbox(self, activate_scrollbars=False, font=(FONT_REGULAR, 11), fg_color=DARK_GREY,
