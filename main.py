@@ -2,13 +2,11 @@ from settings import *
 from chat_window import MainChatFrame
 from yt_scrap import get_transcript
 import customtkinter as ctk
-from PIL import Image
 from tkinter import font
 import scrapetube
 from openai import OpenAI
 import logging
 from typing import Literal
-import os
 
 
 # Initialize logging configuration

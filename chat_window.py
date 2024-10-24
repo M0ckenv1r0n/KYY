@@ -1,6 +1,5 @@
 import customtkinter as ctk
 from settings import *
-from PIL import Image
 
 #Function computes text box height
 def get_height_for_lines(lines: int) -> int:
