@@ -1,5 +1,8 @@
 import customtkinter as ctk
 from settings import *
+import math
+
+MESSAGES_FRAMES = [] #TBD
 
 #Function computes text box height
 def get_height_for_lines(lines: int) -> int:
@@ -10,13 +13,15 @@ def get_height_for_lines(lines: int) -> int:
     elif lines == 3:
         return 50
     else:
-        height = (12.5 * lines)+12
+        height = (13 * lines)+12
         return height
 
-def count_lines_in_message(message: str) -> int:
+def count_lines_in_message(message: str, multiplier: int = 1) -> int:
     line_count = 1
     char_count_in_line = 0
     current_word_length = 0
+
+    chars = math.ceil(32*multiplier)
 
     for char in message:
 
@@ -27,7 +32,7 @@ def count_lines_in_message(message: str) -> int:
         else:
             current_word_length = 0
 
-        if char_count_in_line == 32:
+        if char_count_in_line == chars:
             line_count += 1
             if char == " ":
                 char_count_in_line = 0
@@ -93,17 +98,18 @@ class MainChatFrame(ctk.CTkFrame):
         # Disables while input is processing
         self.send_button_widget.configure(state='disabled')
 
-        UserInputFrame(self.scrollable_frame, user_input.replace(
+        user_msg = UserInputFrame(self.scrollable_frame, user_input.replace(
             '\n', ''))  # Creates frame with sanitized user input
+        
+        MESSAGES_FRAMES.append(user_msg)
+        
 
         response = self.ai_response.send_request(user_input)
 
-        if response is not None:
-            # Creates frame with LLM response
-            AiAnswerFrame(self.scrollable_frame, response)
+        llm_answer_msg= AiAnswerFrame(self.scrollable_frame, response) if response else AiAnswerFrame(self.scrollable_frame, 'Request failed')
 
-        else:
-            AiAnswerFrame(self.scrollable_frame, 'Request failed')
+        MESSAGES_FRAMES.append(llm_answer_msg)
+            
 
         self.scrollable_frame._parent_canvas.yview_moveto(
             1.0)  # Scrolls to the bottom
@@ -115,32 +121,61 @@ class ScrollableFrame(ctk.CTkScrollableFrame):
                          border_width=0, corner_radius=0)
         self.place(relx=0.5, rely=0.52, relwidth=1,
                    relheight=0.8, anchor=ctk.CENTER)
+        
         self.ai_answer_frame = AiAnswerFrame(
             self, "Hey!\nHow can I assist you today?")
-
-
+        
+        
 class AiAnswerFrame(ctk.CTkFrame):
     def __init__(self, parent, response):
         super().__init__(master=parent, fg_color=DARK_DARK_GREY,
                          border_width=0, corner_radius=10)
-        self.pack(pady=5, anchor='w')
+        self.pack(pady=5, anchor='w', fill = 'x', padx = 10)
 
-        self.assistant_label = ctk.CTkLabel(self, text='Impresonator', text_color=WHITE, font=(
-            FONT_REGULAR, 14)).pack(pady=0, anchor='w', padx=50)
+        
+        class frame_for_label(ctk.CTkFrame):
+            def __init__(self, parent):
+                super().__init__(master=parent, fg_color=DARK_DARK_GREY,
+                                border_width=0, corner_radius=10, width=200, height=30)
+                self.pack(pady=0, anchor='w', padx=10)
+                self.assistant_img = ctk.CTkLabel(self, text='🤖', font=(FONT_REGULAR, 32), fg_color=DARK_DARK_GREY, width=32, height=32,
+                                          corner_radius=0).place(relx=0.01, rely=0.02)
+                self.assistant_label = ctk.CTkLabel(self, text='Impresonator', text_color=WHITE, font=(
+                    FONT_REGULAR, 14)).place(relx=0.25, rely=0.02)
+        
+        frame_for_label(self)
 
         self.ai_answer_frame = AiAnswerSubFrame(self, response)
 
-        self.assistant_img = ctk.CTkLabel(self, text='🤖', font=(FONT_REGULAR, 32), fg_color=DARK_DARK_GREY, width=32, height=32,
-                                          corner_radius=0).place(relx=0.02, rely=0.02)
+        
 
 
 class AiAnswerSubFrame(ctk.CTkFrame):
     def __init__(self, parent, response):
-        super().__init__(master=parent, fg_color=DARK_GREY, corner_radius=15)
-        self.pack(padx=(25, 1), pady=(0, 10))
+        super().__init__(master=parent, fg_color=DARK_DARK_GREY, corner_radius=15)
+        self.pack(padx=(25, 1), pady=(0, 10), fill = 'x')
 
-        self.textbox = ctk.CTkTextbox(self, activate_scrollbars=False, font=(FONT_REGULAR, 11), fg_color=DARK_GREY,
+        self.response = response
+
+        self.textbox = ctk.CTkTextbox(self, activate_scrollbars=False, font=(FONT_REGULAR, 11), fg_color=DARK_DARK_GREY,
                                       border_spacing=1, wrap='word')
+        
+        self.textbox.insert(ctk.END, self.response)
+
+        print(count_lines_in_message(self.response, self.winfo_width()/188))
+
+        print(get_height_for_lines(count_lines_in_message(self.response, self.winfo_width()/188)))
+
+        height = get_height_for_lines(count_lines_in_message(self.response, self.winfo_width()/188))
+
+        self.textbox.configure(state='disabled', height = height)
+    
+        self.textbox.pack(padx=(30, 10), pady=(15, 0), fill='x')
+
+        self.copy_btn = ctk.CTkButton(self, text="📋 Copy", font=(FONT_REGULAR, 12), width=80,
+                                      height=30, corner_radius=10, fg_color=DARK_DARK_GREY,
+                                      hover_color=GREY, command=self.copy)
+        self.copy_btn.pack(anchor='w', padx=10, pady=10)
 
         # 10
         # response = 'However, your code doesn\'t follow this format properly because you are trying to assign a value to curr_word_letters_count inside the else part. A better approach would be to split this into separate lines for clarity and correctness, or adjust your ternary operator usage'
@@ -152,23 +187,6 @@ class AiAnswerSubFrame(ctk.CTkFrame):
 
         # 2
         # response = 'Oh hey there! What can I do for you today? Plot the world’s most thrilling heist'
-
-        self.textbox.insert(ctk.END, response)
-
-        self.textbox.configure(state='disabled')
-
-        lines = count_lines_in_message(response)
-
-        self.textbox.pack(padx=(30, 10), pady=(15, 0), fill='x')
-
-        height = get_height_for_lines(lines)
-
-        self.textbox.configure(height=height)
-
-        self.copy_btn = ctk.CTkButton(self, text="📋 Copy", font=(FONT_REGULAR, 12), width=80,
-                                      height=30, corner_radius=10, fg_color=DARK_DARK_GREY,
-                                      hover_color=GREY, command=self.copy)
-        self.copy_btn.pack(anchor='e', padx=10, pady=10)
 
     def copy(self):
         self.clipboard_clear()
@@ -214,6 +232,8 @@ class UserInputSubFrame(ctk.CTkFrame):
                                       height=30, corner_radius=10, fg_color=DARK_DARK_GREY,
                                       hover_color=GREY, command=self.copy)
         self.copy_btn.pack(anchor='w', padx=10, pady=10)
+
+
 
     def copy(self):
         self.clipboard_clear()

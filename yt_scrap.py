@@ -17,8 +17,12 @@ def get_transcript(username: str) -> tuple[str, int, int]:
     transcripts = []
 
     for video_id in videos:
-        subtitles_dict = YouTubeTranscriptApi.get_transcript(
-            str(video_id['videoId']))
+        try:
+            subtitles_dict = YouTubeTranscriptApi.get_transcript(
+                str(video_id['videoId']))
+        except Exception as e:
+            print(e) #change with logging
+            continue
 
         subtitles_str = ' '.join(map(lambda x: x['text'], subtitles_dict))
 
@@ -39,8 +43,4 @@ def get_transcript(username: str) -> tuple[str, int, int]:
     transcripts = '\n\n'.join(transcripts)
     available_video = counter
 
-
-#     import os
-#     with open('test.txt', 'w') as file:
-#      file.write(transcripts)
     return (transcripts, available_video, cum_video_count)
