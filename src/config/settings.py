@@ -29,6 +29,8 @@ PAS_RED_LIGHT = '#fdaaaa'
 PAS_ORANGE = '#f0c58c'
 PAS_ORANGE_LIGHT = '#ffe8c7'
 
+LANGUAGES_LIST = ['ru', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'zh', 'ar', 'ua']
+
 
 def get_system_prompt(username: str) -> str:
     adjusted_system_prompt = f'''

@@ -1,10 +1,11 @@
 import customtkinter as ctk
-from settings import *
 import math
+from ..config.settings import *
+from config.logging_config import logger
 
-MESSAGES_FRAMES = [] #TBD
+MESSAGES_FRAMES = [] #TBD, also add stream msg
 
-#Function computes text box height
+#Function computes textbox height
 def get_height_for_lines(lines: int) -> int:
     if lines == 1:
         return 20
@@ -13,11 +14,11 @@ def get_height_for_lines(lines: int) -> int:
     elif lines == 3:
         return 50
     else:
-        height = (13 * lines)+12
+        height = (13 * lines)+12 #5
         return height
 
 def count_lines_in_message(message: str, multiplier: int = 1) -> int:
-    line_count = 1
+    line_count = 1 
     char_count_in_line = 0
     current_word_length = 0
 
@@ -47,7 +48,7 @@ def count_lines_in_message(message: str, multiplier: int = 1) -> int:
     return line_count
 
 
-class MainChatFrame(ctk.CTkFrame):
+class ChatScreen(ctk.CTkFrame):
     def __init__(self, parent, ai_response):
         super().__init__(master=parent, fg_color=DARK_GREY,
                          border_width=0, corner_radius=0)
@@ -234,7 +235,6 @@ class UserInputSubFrame(ctk.CTkFrame):
         self.copy_btn.pack(anchor='w', padx=10, pady=10)
 
 
-
-    def copy(self):
+    def copy(self) -> None:
         self.clipboard_clear()
         self.clipboard_append(self.textbox.get('0.0', ctk.END))
