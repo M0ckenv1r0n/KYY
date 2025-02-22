@@ -56,7 +56,7 @@ class ChatScreen(ctk.CTkFrame):
 
         self.ai_response = ai_response  # Function for LLM response
 
-        self.name_label = ctk.CTkLabel(self, text="AI Impresonator", font=(FONT_REGULAR, 18),
+        self.name_label = ctk.CTkLabel(self, text="AI Impersonator", font=(FONT_REGULAR, 18),
                                        text_color=BLACK, fg_color=PAS_PURPLE, corner_radius=18, height=35).place(relx=0.5, rely=0.06, anchor=ctk.CENTER)
 
         self.scrollable_frame = ScrollableFrame(self)
@@ -90,7 +90,6 @@ class ChatScreen(ctk.CTkFrame):
 
         user_input = self.user_input_entry.get()
 
-        print(user_input)
         self.user_input_entry.delete(0, 'end')  # Clears entry
 
         if user_input == '':
