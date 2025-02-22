@@ -61,7 +61,7 @@ def get_transcript(username: str) -> tuple[str, int, int]:
         transcripts.append(f"\'title: {title},'transcript': {subtitles_str}\'")
 
         counter += 1
-        time.sleep(2)
+        time.sleep(1)
 
     transcripts = '\n\n'.join(transcripts)
     available_video = counter
